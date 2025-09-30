@@ -1,7 +1,11 @@
-1) Get data
-2) Extract parameters of interest
-3) split events into single detector array - extract waveform
-4) PCA
-5) Scree plots and Principal component plot
-6) reform events with PCA
-7) output file
+z) Config constant
+a) Get data
+b) Extract parameters of interest
+c) Split events into single detector array -  Extract waveform
+d) PCA
+e) Scree plots and Principal component plot
+
+onhold for now:
+*) reform events with PCA
+*) output file
+*) PCA comparison between separate data (different project?)

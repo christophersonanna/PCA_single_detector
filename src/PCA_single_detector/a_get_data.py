@@ -23,5 +23,5 @@ for batch in parquet_file.iter_batches():
     print(batch)
 '''
 
-print(parquet_file.columns)    
+#print(parquet_file.columns)    
     
