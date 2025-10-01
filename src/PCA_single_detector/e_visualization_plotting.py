@@ -5,9 +5,7 @@
 #may want to add a comparison between multiple PCAs (probably a different script that
 #   uses the ones before this)
 
-#test
 # Importing
-
 import matplotlib.pyplot as plt
 import numpy as np
 import c_split_events_waveform_extraction as extract
@@ -44,10 +42,10 @@ def waveform_PCA_visualization(pca, label, color):
         ax_this.set_ylim(-0.5,0.5)
         ax_this.set_xlim(0,128)
         ax_this.set_title(f"PC{i}")
-    fig.suptitle(label+f" Principle Components\n From {len(extract.fadc0_singdec)} detector waveforms")
-    #fig.suptitle(label+" Principle Components")
+    #fig.suptitle(label+f" Principle Components\n From {len(extract.fadc0_singdec)} detector waveforms") #need to figure out how to make this data specific
+    fig.suptitle(label+" Principle Components")
     plt.show()    
 
 #Applying definition to FADC0 and FADC1 data.
 waveform_PCA_visualization(wave_pca.FADC0_PCA, 'FADC0', 'black')
-waveform_PCA_visualization(wave_pca.FADC0_PCA, 'FADC1', 'black')
+waveform_PCA_visualization(wave_pca.FADC1_PCA, 'FADC1', 'black')

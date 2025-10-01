@@ -18,4 +18,13 @@ def PCA_single_detector(data):
 
 #running PCA
 FADC0_PCA, transformed_FADC0_data = PCA_single_detector(waveform.fadc0_singdec)
+#Ppca_fadc0, transformed_Ppca_fadc0 = PCA_single_detector(waveform.fadc0_p)
+#Ipca_fadc0, transformed_Ipca_fadc0 = PCA_single_detector(waveform.fadc0_f)
+
+#!!!!need to create a condition that MC isn't called unless it needs to be used later
+
 FADC1_PCA, transformed_FADC1_data = PCA_single_detector(waveform.fadc1_singdec)
+#Ppca_fadc1, transformed_Ppca_fadc1 = PCA_single_detector(waveform.fadc1_p)
+#Ipca_fadc1, transformed_Ipca_fadc1 = PCA_single_detector(waveform.fadc1_f)
+
+

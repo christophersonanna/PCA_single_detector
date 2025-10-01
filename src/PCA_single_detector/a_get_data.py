@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #import awkward as ak
-import pyarrow.parquet as pq
+#import pyarrow.parquet as pq
 import z_config as config
 import pandas as pd #will change later
 
