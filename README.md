@@ -10,6 +10,10 @@ d) PCA
 
 e) Scree plots and Principal component plot
 
+f) Data comparison
+
+g) Residual PCA
+
 onhold for now:
 
 *) reform events with PCA
