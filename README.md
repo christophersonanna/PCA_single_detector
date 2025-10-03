@@ -25,6 +25,7 @@ e) Plotting script: Scree plots and Principal component plot
     - PCA3_comparisons: PC plot comparing three data sets
     - upper_and_lower_waveform_PCA_visualization: PC plot for the upper and 
                 lower trace signals PCAs for one dataset
+    -variance_plot: Projects the PCA data in the first 3 PCs
 
 f) Get MC data (combine with script a)
 
