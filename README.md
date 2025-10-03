@@ -33,6 +33,7 @@ g) Residual PCA [WIP]
 i) Playground script: used to test new ideas before adding to the rest of the 
                 project
     - Currently: Time testing PCA
+                 Plotting variance of primaries (super messy)
 
 
 
