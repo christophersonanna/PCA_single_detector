@@ -7,10 +7,7 @@
     #for now, may write in something later to account for that
 #outputs single dataframe (data_df_single_detector)
 
-import numpy as np
 import z_config as config
-import b_perameter_extraction as extract
-#import f_a_get_mc as get_mc
 
 #creating definition for making an array of detectors (not event based)
     ##might want to write in a new column which states the event the detector is a part of
@@ -21,16 +18,8 @@ def fadc_single_detector_array(data, parameter):
         for hit_idx in range(n_hits)]
     return fadc_singdec
 
-#extraction fadc0
-fadc0_singdec = fadc_single_detector_array(extract.data_df, 'FADC0')
-
-#extraction fadc1
-fadc1_singdec = fadc_single_detector_array(extract.data_df,'FADC1')
-
-print(f"Extracted {len(fadc0_singdec)} single detector waveforms.")
-
-'''
-#%%need to clean this up later!!!
+#!!!need to clean this up later!!!
+#this is due to the fact that Doug's MC doesn't have nhits in the dataframe. 
 def extract_waveforms(dataframe):
     fadc0_list = []
     fadc1_list = []
@@ -53,16 +42,3 @@ def extract_waveforms(dataframe):
     return fadc0_list, fadc1_list
 
 
-# Proton Data Processing
-print("\nProton Data")
-fadc0_p, fadc1_p = extract_waveforms(get_mc.proton_data)
-fadc0_p = [arr for arr in fadc0_p if np.sum(arr) != 0]
-fadc1_p = [arr for arr in fadc1_p if np.sum(arr) != 0]
-print(f"Extracted {len(fadc0_p)} single FADC0 waveforms for Protons.")
-
-# Iron Data Processing
-print("\nIron Data")
-fadc0_f, fadc1_f = extract_waveforms(get_mc.iron_data)
-fadc0_f = [arr for arr in fadc0_f if np.sum(arr) != 0]
-fadc1_f = [arr for arr in fadc1_f if np.sum(arr) != 0]
-print(f"Extracted {len(fadc0_f)} single FADC0 waveforms for Iron.")'''

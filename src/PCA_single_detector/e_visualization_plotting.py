@@ -8,10 +8,9 @@
 # Importing
 import matplotlib.pyplot as plt
 import numpy as np
-import c_split_events_waveform_extraction as extract
-import d_waveform_pca as wave_pca
+from z_config import PLOT_PRINCIPLE_COMPONENTS as NumPC
 
-#definition 
+#Plot of a single PCA: Scree plot and visualization of the first 25 PCs
 def waveform_PCA_visualization(pca, label, color):
     
     # Make Scree plot (FADC0)
@@ -32,8 +31,8 @@ def waveform_PCA_visualization(pca, label, color):
     ax2.set_xlim(0,25);
     plt.show()
 
-    # Visualize the first 5 PCs
-    fig, ax = plt.subplots(5, 5, figsize=(10, 10),sharey=True, constrained_layout=True)
+    # Visualize the first 25 PCs
+    fig, ax = plt.subplots(np.sqrt(NumPC), np.sqrt(NumPC), figsize=(10, 10),sharey=True, constrained_layout=True)
     for i, ax_this in enumerate(ax.flat):
         ax_this.axhline(0,c='k',linewidth=0.5,alpha=0.5)
         ax_this.plot(pca.components_[i], c=color)
@@ -41,11 +40,60 @@ def waveform_PCA_visualization(pca, label, color):
         ax_this.axes.get_xaxis().set_visible(False)
         ax_this.set_ylim(-0.5,0.5)
         ax_this.set_xlim(0,128)
-        ax_this.set_title(f"PC{i}")
+        ax_this.set_title(f"PC{i+1}")
     #fig.suptitle(label+f" Principle Components\n From {len(extract.fadc0_singdec)} detector waveforms") #need to figure out how to make this data specific
     fig.suptitle(label+" Principle Components")
-    plt.show()    
+    plt.show()
 
-#Applying definition to FADC0 and FADC1 data.
-waveform_PCA_visualization(wave_pca.FADC0_PCA, 'FADC0', 'black')
-waveform_PCA_visualization(wave_pca.FADC1_PCA, 'FADC1', 'black')
+
+#Plots upper and lower trace single PCA together for one dataset
+#!!!techincally, I could combine all the definitions together, but that's a clean up thing for later.
+def upper_and_lower_waveform_PCA_visualization(upper_pca, lower_pca, label, color):
+    # Visualize the first 25 PCs
+    fig, ax = plt.subplots(np.sqrt(NumPC), np.sqrt(NumPC), figsize=(10, 10),sharey=True, constrained_layout=True)
+    for i, ax_this in enumerate(ax.flat):
+        ax_this.axhline(0,c='k',linewidth=0.5,alpha=0.5)
+        ax_this.plot(upper_pca.components_[i], c=color,label='Upper')
+        ax_this.plot(lower_pca.components_[i], c='k',label='Lower')
+        #ax_this.axes.get_yaxis().set_visible(False)
+        ax_this.axes.get_xaxis().set_visible(False)
+        ax_this.set_ylim(-0.5,0.5)
+        ax_this.set_xlim(0,128)
+        ax_this.set_title(f"PC{i}")
+    handles, labels = ax_this.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper left')
+    fig.suptitle(label+" Principle Components\n")
+    plt.show()
+    
+#Plotting 2 different PCA for comparison
+def PCA_comparisons(pca1, pca2, ID1, ID2, label, color1, color2):
+    fig, ax = plt.subplots(np.sqrt(NumPC), np.sqrt(NumPC), figsize=(10, 10),sharey=True, constrained_layout=True)
+    for i, ax_this in enumerate(ax.flat):
+        ax_this.axhline(0,c='k',linewidth=0.5,alpha=0.5)
+        ax_this.plot(pca2.components_[i], c=color2,label=ID2)
+        ax_this.plot(pca1.components_[i], c=color1,label=ID1)
+        ax_this.axes.get_xaxis().set_visible(False)
+        ax_this.set_ylim(-0.5,0.5)
+        ax_this.set_xlim(0,128)
+        ax_this.set_title(f"PC{i}")
+    handles, labels = ax_this.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper left')
+    fig.suptitle(label+" Principle Components")
+    plt.show()
+
+#Plotting 3 PCA for comparison
+def PCA3_comparisons(pca1, pca2, pca3,label):
+    fig, ax = plt.subplots(np.sqrt(NumPC), np.sqrt(NumPC), figsize=(10, 10),sharey=True, constrained_layout=True)
+    for i, ax_this in enumerate(ax.flat):
+        ax_this.axhline(0,c='k',linewidth=0.5,alpha=0.5)
+        ax_this.plot(pca1.components_[i], c='k',label='General')
+        ax_this.plot(pca2.components_[i], c='red',label="Proton")
+        ax_this.plot(pca3.components_[i], c='blue',label="Iron")
+        ax_this.axes.get_xaxis().set_visible(False)
+        ax_this.set_ylim(-0.5,0.5)
+        ax_this.set_xlim(0,128)
+        ax_this.set_title(f"PC{i}")
+    handles, labels = ax_this.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper left')
+    fig.suptitle(label+" Principle Components")
+    plt.show()

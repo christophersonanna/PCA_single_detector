@@ -22,6 +22,5 @@ for batch in parquet_file.iter_batches():
     #print(f"Loaded data from {input_file} into variable '{data_var_name}'")
     print(batch)
 '''
-
-#print(parquet_file.columns)    
+ 
     
