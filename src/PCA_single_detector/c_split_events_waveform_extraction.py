@@ -41,4 +41,13 @@ def extract_waveforms(dataframe):
 
     return fadc0_list, fadc1_list
 
-
+def normalize_waveform(data, exclude_saturation=True):
+    if exclude_saturation == True:
+        data = [arr for arr in data if max(arr)<=1]
+    elif exclude_saturation == False:
+        data = data
+    norm_data = []
+    for i in range(0,len(data)):
+        norm_fact = 1/max(data[i])
+        norm_data.append(norm_fact*(data[i]))
+    return norm_data

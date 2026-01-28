@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from f_a_get_mc import proton_data, iron_data
+from f_get_mc import proton_data, iron_data
 import b_perameter_extraction as extract
 from c_split_events_waveform_extraction import fadc_single_detector_array, extract_waveforms
 from d_waveform_pca import PCA_single_detector
