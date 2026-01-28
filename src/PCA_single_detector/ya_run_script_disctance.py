@@ -8,11 +8,11 @@ Created on Tue Jan 20 11:23:01 2026
 import numpy as np
 
 import z_config as config
+import matplotlib.pyplot as plt
 from f_get_mc import proton_data, iron_data
 from d_waveform_pca import PCA_single_detector
 from e_visualization_plotting import waveform_PCA_visualization,upper_and_lower_waveform_PCA_visualization
 from c_split_events_waveform_extraction import normalize_waveform
-from x_buildwaveform import plot_wave_against_PCA_recon_waveform
 
 def extract_waveforms_radius(dataframe):
     fadc0_list = []
@@ -40,6 +40,32 @@ def extract_waveforms_radius(dataframe):
             radius_list.append(event_radius[i])
     return fadc0_list, fadc1_list, radius_list
 
+def plot_wave_against_PCA_recon_waveform(data,PCA, trans, n, comp_start, comp_end,c):
+    x = np.linspace(0, 127, 128)
+    norm_data = []
+    for i in range(0,len(data[n])):
+        norm_fact = 1/max(data[n][i])
+        norm_data.append(norm_fact*(data[n][i]))
+    
+    plt.plot(x, np.linspace(0,0,128), color='gray', alpha=0.5, label='PCs')
+    plt.plot(x, norm_data, color='k', linewidth=2, label="True Waveform")
+    num_components_to_plot = 10
+    for i in range(num_components_to_plot):
+        component_scale = PCA.components_[i] * trans[n][i]
+        plt.plot(x, component_scale, color='gray', alpha=.5)
+
+    components = PCA.components_[comp_start:comp_end]
+    coefficients = trans[n, comp_start:comp_end]
+    P_wave_projection = np.einsum('i,ij->j', coefficients, components)
+    P_wave = P_wave_projection
+
+    plt.plot(x, P_wave, color=c, label='PCA waveform')
+    plt.legend()
+    plt.xlabel("Time") # Add labels for clarity
+    plt.ylabel("Amplitude")
+    plt.title("Waveform and PCA Components")
+    plt.grid(alpha=0.5)
+    plt.show()
 
 #%% normalize wavefunction then PCA
 # Proton Data Processing
