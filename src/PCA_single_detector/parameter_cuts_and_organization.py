@@ -10,7 +10,7 @@
 #!!!Should be a definition/class
 
 #importing
-import a_get_data as get_data
+import get_data
 
 #extraction parameters
 data_df = get_data.parquet_file[get_data.parquet_file['NSpaceCluster'] > 4].reset_index(drop=True) #write in function new var

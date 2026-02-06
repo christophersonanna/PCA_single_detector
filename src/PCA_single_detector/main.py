@@ -25,8 +25,8 @@ print(f"Extracted {len(fadc0_singdec)} single detector waveforms.")
 # Proton Data Processing
 print("\nProton Data")
 fadc0_p, fadc1_p = extract_waveforms(proton_data)
-fadc0_p = [arr for arr in fadc0_p if np.sum(arr) != 0]
-fadc1_p = [arr for arr in fadc1_p if np.sum(arr) != 0]
+#fadc0_p = [arr for arr in fadc0_p if np.sum(arr) != 0]
+#fadc1_p = [arr for arr in fadc1_p if np.sum(arr) != 0]
 print(f"Extracted {len(fadc0_p)} single FADC0 waveforms for Protons.")
 
 # Iron Data Processing

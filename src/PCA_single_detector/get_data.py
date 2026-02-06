@@ -2,7 +2,7 @@
 
 #import awkward as ak
 #import pyarrow.parquet as pq
-import z_config as config
+import config as config
 import pandas as pd #[will change later]
 
 #loading data

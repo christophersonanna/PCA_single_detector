@@ -9,7 +9,7 @@
     #for now, may write in something later to account for that
 #outputs single dataframe (data_df_single_detector)
 
-import z_config as config
+import config
 
 #creating definition for making an array of detectors (not event based)
     ##might want to write in a new column which states the event the detector is a part of

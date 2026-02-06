@@ -10,7 +10,7 @@
 # Importing
 import matplotlib.pyplot as plt
 import numpy as np
-from z_config import PLOT_PRINCIPLE_COMPONENTS as NumPC
+from config import PLOT_PRINCIPLE_COMPONENTS as NumPC
 
 #Plot of a single PCA: Scree plot and visualization of the first 25 PCs
 def waveform_PCA_visualization(pca, label, color):
