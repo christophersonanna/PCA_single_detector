@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-#Only step is processing the data from c through a PCA
+#Only step is processing the data through a PCA
 #for now, we'll create a new PCA for the data, but I will need to account for 
 #   when I need to apply new data to a pre-existing PCA
 
-import z_config as config
+import config
 import numpy as np
 from sklearn.decomposition import PCA
 

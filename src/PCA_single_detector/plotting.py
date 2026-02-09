@@ -5,10 +5,12 @@
 #may want to add a comparison between multiple PCAs (probably a different script that
 #   uses the ones before this)
 
+"""Need to simplify these to make a single def more versatile"""
+
 # Importing
 import matplotlib.pyplot as plt
 import numpy as np
-from z_config import PLOT_PRINCIPLE_COMPONENTS as NumPC
+from config import PLOT_PRINCIPLE_COMPONENTS as NumPC
 
 #Plot of a single PCA: Scree plot and visualization of the first 25 PCs
 def waveform_PCA_visualization(pca, label, color):
@@ -104,7 +106,8 @@ def variance_plot(data_after_pca, label, color):
     ax = fig.add_subplot(projection='3d')
     cs = ax.scatter(data_after_pca[:,0], data_after_pca[:,1], data_after_pca[:,2], color=color)
 
-    ax.view_init(30, -60)  # change these two numbers to rotate the view
+    ax.view_init(30, -60)  # change these two numbers to rotate the view 
+                           # TO DO: MAKE THIS A USER CHOSE IN TERMINAL
     
     ax.set_xlabel("PC 1")
     ax.set_ylabel("PC 2")
