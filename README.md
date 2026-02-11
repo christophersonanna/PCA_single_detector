@@ -7,6 +7,12 @@
     ! Most work needed here (see note in script)
     - Reads data file in
 
+* class_id.py
+    - creates class attributes of the data
+    
+    - load_events(file_path: str): Reads in parquet data files and organizes
+            into class attributes.
+
 * parameter_cuts_and_organization.py
     
     ! Needs to be reworked into a def/class
@@ -64,10 +70,13 @@
 _____________
 Wants: 
 
-d-??) Different files to call based on what I want done
+* Different files to call based on what I want done
         - examples:
             - plot PCA of the entire files
+            
             - plot upper and lower signals
+            
             - plot radius PCA 
                 - specify the radius of interest or do all
+            
             - plot primary 
