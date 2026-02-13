@@ -5,83 +5,34 @@ Created on Wed Jan 28 12:31:04 2026
 
 @author: anna
 """
+import argparse
+from config import N_COMPONENTS_PCA
+from loader import load_parquet
+from processor import apply_cuts, events_to_waveform_set, global_pca_event_aggregation
+from plotting import plot_events_by_primary
 
-# -*- coding: utf-8 -*-
-import numpy as np
-import config
-from get_data import parquet_file, iron_data, proton_data
-from parameter_cuts_and_organization import data_df
-from plotting import waveform_PCA_visualization, upper_and_lower_waveform_PCA_visualization, PCA_comparisons, PCA3_comparisons, variance_plot
-from waveform_extraction import fadc_single_detector_array, extract_waveforms, normalize_waveform
-from waveform_pca import PCA_single_detector
-from waveform_reconstruction import plot_wave_against_PCA_recon_waveform
+def main():
+    parser = argparse.ArgumentParser(description="Unified PCA Pipeline")
+    parser.add_argument("paths", nargs="+", help="Input Parquet files")
+    args = parser.parse_args()
 
-'''Extracting Waveforms'''
-#extraction fadc0 and fadc1 of original data
-fadc0_singdec = fadc_single_detector_array(data_df, 'FADC0')
-fadc1_singdec = fadc_single_detector_array(data_df,'FADC1')
-print(f"Extracted {len(fadc0_singdec)} single detector waveforms.")
+    # 1. Load and merge files
+    all_events = []
+    for path in args.paths:
+        all_events.extend(load_parquet(path))
 
-# Proton Data Processing
-print("\nProton Data")
-fadc0_p, fadc1_p = extract_waveforms(proton_data)
-#fadc0_p = [arr for arr in fadc0_p if np.sum(arr) != 0]
-#fadc1_p = [arr for arr in fadc1_p if np.sum(arr) != 0]
-print(f"Extracted {len(fadc0_p)} single FADC0 waveforms for Protons.")
+    # 2. Apply cuts (e.g., n_space_cluster > 5)
+    all_events = apply_cuts(all_events)
 
-# Iron Data Processing
-print("\nIron Data")
-fadc0_f, fadc1_f = extract_waveforms(iron_data)
-fadc0_f = [arr for arr in fadc0_f if np.sum(arr) != 0]
-fadc1_f = [arr for arr in fadc1_f if np.sum(arr) != 0]
-print(f"Extracted {len(fadc0_f)} single FADC0 waveforms for Iron.")
+    # 3. Transform to WaveformSet
+    ws = events_to_waveform_set(all_events)
 
+    # 4. Global PCA aggregation for FADC0 and FADC1
+    res0 = global_pca_event_aggregation(ws, "fadc0", N_COMPONENTS_PCA)
+    res1 = global_pca_event_aggregation(ws, "fadc1", N_COMPONENTS_PCA)
 
-'''PCA'''
-#running PCA
-#FADC0_PCA, transformed_FADC0_data = PCA_single_detector(fadc0_singdec)
-Ppca_fadc0, transformed_Ppca_fadc0 = PCA_single_detector(fadc0_p)
-Ipca_fadc0, transformed_Ipca_fadc0 = PCA_single_detector(fadc0_f)
+    # 5. Plotting results
+    plot_events_by_primary(res0, "mean_PC1", "mean_PC2")
 
-#!!!!need to create a condition that MC isn't called unless it needs to be used later
-
-#FADC1_PCA, transformed_FADC1_data = PCA_single_detector(fadc1_singdec)
-Ppca_fadc1, transformed_Ppca_fadc1 = PCA_single_detector(fadc1_p)
-Ipca_fadc1, transformed_Ipca_fadc1 = PCA_single_detector(fadc1_f)
-
-
-'''Visualizing'''
-'Singles'
-#Applying definition to FADC0 and FADC1 data.
-#waveform_PCA_visualization(FADC0_PCA, 'FADC0', 'black')
-#waveform_PCA_visualization(FADC1_PCA, 'FADC1', 'black')
-'Upper and Lower Together'
-#upper_and_lower_waveform_PCA_visualization(FADC0_PCA,FADC1_PCA, 'General FADC', 'purple')
-upper_and_lower_waveform_PCA_visualization(Ppca_fadc0,Ppca_fadc1, 'Proton FADC', 'blue')
-upper_and_lower_waveform_PCA_visualization(Ipca_fadc0,Ipca_fadc1, 'Iron FADC', 'r')
-'''Variance'''
-#variance_plot(transformed_FADC0_data, 'FADC0')
-variance_plot(transformed_Ppca_fadc0, 'proton fadc0', 'red')
-variance_plot(transformed_Ipca_fadc0, 'iron fadc0', 'blue')
-
-variance_plot(transformed_Ppca_fadc1, 'proton fadc1','red')
-variance_plot(transformed_Ipca_fadc1, 'iron fadc1','blue')
-
-'''Comparison'''
-# Main execution for proton and iron data
-# Applying PCA to Proton and Iron FADC0 data.
-#PCA_comparisons(Ppca_fadc0, FADC0_PCA, "Proton", "General", "FADC0", "red", 'k')
-#PCA_comparisons(Ipca_fadc0, FADC0_PCA, "Iron", "General", "FADC0", "blue", 'k')
-#PCA_comparisons(Ppca_fadc0, Ipca_fadc0, "Proton", "Iron", "FADC0", "red", 'blue')
-
-#PCA_comparisons(Ppca_fadc1, FADC1_PCA, "Proton", "General", "FADC1", "red", 'k')
-#PCA_comparisons(Ipca_fadc1, FADC1_PCA, "Iron", "General", "FADC1", "blue", 'k')
-#PCA_comparisons(Ppca_fadc1, Ipca_fadc1, "Proton", "Iron", "FADC1", "red", 'blue')
-
-# 
-#PCA3_comparisons(FADC0_PCA,Ppca_fadc0,Ipca_fadc0,"FADC0")
-#PCA3_comparisons(FADC1_PCA,Ppca_fadc1,Ipca_fadc1,"FADC1")
-
-'''Residual PCA'''
-#not adding it here since it messy at the moment and I don't want to run it unless I absolutely want to
-
+if __name__ == "__main__":
+    main()

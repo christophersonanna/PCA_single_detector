@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 11 11:15:57 2026
 
-@author: anna
-"""
-
-#import numpy as np
+#import libraries
 from dataclasses import dataclass
 from typing import List, Any
 import awkward as ak
+import numpy as np
 
-# Define a Type Alias for clarity, representing variable-length arrays
-VarArray = Any 
+#define a Type Alias for clarity, representing variable-length arrays
+np.ndarray = Any 
 
 @dataclass
 class StartStop:
@@ -37,8 +33,8 @@ class RuSdraw:
     event_num: int
     event_code: int
     site: int
-    run_id: VarArray
-    trig_id: VarArray
+    run_id: np.ndarray
+    trig_id: np.ndarray
     errcode: int
     yymmdd: int
     hhmmss: int
@@ -46,26 +42,26 @@ class RuSdraw:
     monyymmdd: int
     monhhmmss: int
     nofwf: int
-    nretry: VarArray
-    wf_id: VarArray
-    trig_code: VarArray
-    xxyy: VarArray
-    clkcnt: VarArray
-    mclkcnt: VarArray
-    fadcti: VarArray
-    fadcav: VarArray
-    fadc: VarArray
-    pchmip: VarArray
-    pchped: VarArray
-    lhpchmip: VarArray
-    lhpchped: VarArray
-    rhpchmip: VarArray
-    rhpchped: VarArray
-    mftndof: VarArray
-    mip: VarArray
-    mftchi2: VarArray
-    mftp: VarArray
-    mftpe: VarArray
+    nretry: np.ndarray
+    wf_id: np.ndarray
+    trig_code: np.ndarray
+    xxyy: np.ndarray
+    clkcnt: np.ndarray
+    mclkcnt: np.ndarray
+    fadcti: np.ndarray
+    fadcav: np.ndarray
+    fadc: np.ndarray
+    pchmip: np.ndarray
+    pchped: np.ndarray
+    lhpchmip: np.ndarray
+    lhpchped: np.ndarray
+    rhpchmip: np.ndarray
+    rhpchped: np.ndarray
+    mftndof: np.ndarray
+    mip: np.ndarray
+    mftchi2: np.ndarray
+    mftp: np.ndarray
+    mftpe: np.ndarray
     version: int
 
 @dataclass
@@ -79,7 +75,7 @@ class ShowLib:
     nmax: float
     x0: float
     xmax: float
-    lambda_: float  # 'lambda' is a reserved keyword
+    lambda_: float
     chi2: float
     version: int
 
@@ -101,79 +97,75 @@ class Rufptn:
     nsclust: int
     nstclust: int
     nborder: int
-    isgood: VarArray
-    wfindex: VarArray
-    xxyy: VarArray
-    nfold: VarArray
-    sstart: VarArray
-    sstop: VarArray
-    lderiv: VarArray
-    zderiv: VarArray
-    xyzclf: VarArray
-    reltime: VarArray
-    timeerr: VarArray
-    fadcpa: VarArray
-    fadcpaerr: VarArray
-    pulsa: VarArray
-    pulsaerr: VarArray
-    ped: VarArray
-    pederr: VarArray
-    vem: VarArray
-    vemerr: VarArray
-    qtot: VarArray
-    tearliest: VarArray
-    tyro_cdist: VarArray
-    tyro_xymoments: VarArray
-    tyro_xypmoments: VarArray
-    tyro_u: VarArray
-    tyro_v: VarArray
-    tyro_tfitpars: VarArray
-    tyro_chi2: VarArray
-    tyro_ndof: VarArray
-    tyro_theta: VarArray
-    tyro_phi: VarArray
+    isgood: np.ndarray
+    wfindex: np.ndarray
+    xxyy: np.ndarray
+    nfold: np.ndarray
+    sstart: np.ndarray
+    sstop: np.ndarray
+    lderiv: np.ndarray
+    zderiv: np.ndarray
+    xyzclf: np.ndarray
+    reltime: np.ndarray
+    timeerr: np.ndarray
+    fadcpa: np.ndarray
+    fadcpaerr: np.ndarray
+    pulsa: np.ndarray
+    pulsaerr: np.ndarray
+    ped: np.ndarray
+    pederr: np.ndarray
+    vem: np.ndarray
+    vemerr: np.ndarray
+    qtot: np.ndarray
+    tearliest: np.ndarray
+    tyro_cdist: np.ndarray
+    tyro_xymoments: np.ndarray
+    tyro_xypmoments: np.ndarray
+    tyro_u: np.ndarray
+    tyro_v: np.ndarray
+    tyro_tfitpars: np.ndarray
+    tyro_chi2: np.ndarray
+    tyro_ndof: np.ndarray
+    tyro_theta: np.ndarray
+    tyro_phi: np.ndarray
     version: int
 
 @dataclass
 class RuSdgeom:
     nsds: int
-    nsig: VarArray
-    sdsigq: VarArray
-    sdsigt: VarArray
-    sdsigte: VarArray
-    igsig: VarArray
-    irufptn: VarArray
-    xyzclf: VarArray
-    pulsa: VarArray
-    sdtime: VarArray
-    sdterr: VarArray
-    igsd: VarArray
-    xxyy: VarArray
-    sdirufptn: VarArray
-    xcore: VarArray
-    dxcore: VarArray
-    ycore: VarArray
-    dycore: VarArray
-    t0: VarArray
-    dt0: VarArray
-    theta: VarArray
-    dtheta: VarArray
-    phi: VarArray
-    dphi: VarArray
-    chi2: VarArray
-    ndof: VarArray
+    nsig: np.ndarray
+    sdsigq: np.ndarray
+    sdsigt: np.ndarray
+    sdsigte: np.ndarray
+    igsig: np.ndarray
+    irufptn: np.ndarray
+    xyzclf: np.ndarray
+    pulsa: np.ndarray
+    sdtime: np.ndarray
+    sdterr: np.ndarray
+    igsd: np.ndarray
+    xxyy: np.ndarray
+    sdirufptn: np.ndarray
+    xcore: np.ndarray
+    dxcore: np.ndarray
+    ycore: np.ndarray
+    dycore: np.ndarray
+    t0: np.ndarray
+    dt0: np.ndarray
+    theta: np.ndarray
+    dtheta: np.ndarray
+    phi: np.ndarray
+    dphi: np.ndarray
+    chi2: np.ndarray
+    ndof: np.ndarray
     a: float
     da: float
     tearliest: float
     version: int
 
 class ParquetEvent:
-    """Handles the extraction of a single row into structured dataclasses."""
     def __init__(self, row):
-        self.start = StartStop(row.start.active, row.start._version)
-        self.stop = StartStop(row.stop.active, row.stop._version)
-        
-        # Helper to handle the _version underscore mapping
+        # Maps the complex nested Awkward structures to Python objects
         def get_versioned_data(data):
             d = {k: data[k] for k in data.fields if k != "_version"}
             d["version"] = data._version
@@ -192,7 +184,6 @@ class ParquetEvent:
         self.rusdgeom = RuSdgeom(**get_versioned_data(row.rusdgeom))
 
 def load_events(file_path: str):
-    """Returns an Awkward Array of all events."""
     return ak.from_parquet(file_path)
 
 #%%
@@ -207,13 +198,8 @@ high_energy_events = events[events.rusdmc.energy > 1e18]
 # Accessing variable length FADC data for the first event
 first_event_fadc = events[0].rusdraw.fadc
 
-print(theta_values)
-print(high_energy_events)
-print(first_event_fadc)
-
-#%%
-import pandas as pd
-
-data = pd.read_parquet("/home/anna/DST_awkward-main/xmax_project_sample.parquet")
-
-print((data['rusdraw'][0]['fadc'][0][0]))
+#print(theta_values)
+#print(high_energy_events)
+#print(first_event_fadc)
+#print(events[0].rusdgeom.xxyy)
+print(events[0].rufptn.reltime)

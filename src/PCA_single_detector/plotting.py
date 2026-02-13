@@ -1,7 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#Scree plot and PC visualization
+# modules/plotting.py
+import matplotlib.pyplot as plt
+import numpy as np
+from core import config
+
+def plot_scree_and_pcs(pca_result, title_prefix=""):
+    """Plots the explained variance (Scree) and the first 25 Principal Components."""
+    pca = pca_result.pca
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    
+    # Scree Plot
+    x = np.arange(1, len(pca.explained_variance_ratio_) + 1)
+    ax1.bar(x, pca.explained_variance_ratio_, alpha=0.6, color='darkorange')
+    ax1.plot(x, np.cumsum(pca.explained_variance_ratio_), marker='o', color='navy')
+    ax1.set_title(f"{title_prefix} Scree Plot")
+    ax1.set_xlabel("Component")
+    ax1.set_ylabel("Explained Variance")
+
+    # Visualize first few components (e.g., 9 in a 3x3 grid)
+    fig2, axes = plt.subplots(3, 3, figsize=(10, 10))
+    for i, ax in enumerate(axes.flat):
+        if i < len(pca.components_):
+            ax.plot(pca.components_[i], color='blue')
+            ax.set_title(f"PC {i+1}")
+    plt.tight_layout()
+    plt.savefig(f"{title_prefix.lower().replace(' ', '_')}_components.png")
+
+def plot_events_by_primary(res, x_feat="mean_PC1", y_feat="mean_PC2"):
+    """Scatter plot of events in PC space, colored by particle type (Proton/Iron)."""
+    plt.figure(figsize=(8, 6))
+    ix = res.feature_names.index(x_feat)
+    iy = res.feature_names.index(y_feat)
+    
+    for p_id, label, color in [(config.PROTON, "Proton", "red"), (config.IRON, "Iron", "blue")]:
+        mask = res.primary == p_id
+        if np.any(mask):
+            plt.scatter(res.features[mask, ix], res.features[mask, iy], 
+                        label=label, color=color, alpha=0.5, s=10)
+    
+    plt.xlabel(x_feat)
+    plt.ylabel(y_feat)
+    plt.legend()
+    plt.title(f"Event Distribution: {x_feat} vs {y_feat}")
+    plt.savefig(f"scatter_{x_feat}_{y_feat}.png")
+
+
+'''#Scree plot and PC visualization
 #may want to add a comparison between multiple PCAs (probably a different script that
 #   uses the ones before this)
 
@@ -114,4 +160,4 @@ def variance_plot(data_after_pca, label, color):
     ax.set_zlabel("PC 3")
     plt.colorbar(cs, label=" ", shrink=0.7)
     plt.title(label)
-    fig.tight_layout()
+    fig.tight_layout()'''
