@@ -1,12 +1,17 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
+GRID_TO_KM = 1.2
 
-# Configuration Constants
-PROCESSED_DATA_PATH = Path('/home/anna/Machine_Learning_Xmax/data/processed_tree_sample.parquet')
-OUTPUT_DATA_PATH = Path('/home/anna/Machine_Learning_Xmax/data/PCA_single_detector_25PC.parquet')
-N_COMPONENTS_PCA = 128
-WAVEFORM_LENGTH = 128
-PLOT_PRINCIPLE_COMPONENTS = 25 #must be square for now
-PROTON = 14
-IRON = 5626
+PROTON_ID = 14
+IRON_ID = 5626
+
+WAVEFORM_BINS = 128
+FEATURE_VECTOR_SIZE = 256
+
+PCA_COMPONENTS = 10
+
+RADIUS_WINDOW = 2.0  # Window for filtering
+ENERGY_WINDOW = 0.5
+
+

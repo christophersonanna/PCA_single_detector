@@ -80,3 +80,17 @@ Wants:
                 - specify the radius of interest or do all
             
             - plot primary 
+            
+            
+____
+
+combined_pca/
+├── core/
+│   ├── config.py       # Constants, paths, and IDs
+│   └── types.py        # Dataclasses (Hit, Event, PCAResult, etc.)
+├── modules/
+│   ├── loader.py       # Parquet reading logic
+│   ├── processor.py    # PCA, event aggregation, and cuts
+│   └── plotting.py     # All visualization functions
+└── main.py             # Single entry point orchestrating the flow
+
