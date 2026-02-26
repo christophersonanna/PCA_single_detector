@@ -13,7 +13,7 @@ def extract_event_features(events):
     metadata = []
     
     for e in events:
-        # 1. Get all FADC waveforms for this event's hits
+        # 1. Gets all FADC waveforms for this event's hits
         # Shape: (num_hits, 128)
         waves = np.array([h.fadc0 for h in e.hits])
         
@@ -21,17 +21,16 @@ def extract_event_features(events):
             continue
             
         # 2. Calculate the "Event Profile"
-        # We take the mean and std across the hits to see the 'average' shower shape
+        # Takes the mean and std across the hits to see the 'average' shower shape
         mean_wf = np.mean(waves, axis=0)
         std_wf = np.std(waves, axis=0)
         
-        # 3. Combine them into one feature vector (256 bins)
-        # This is what the PCA will actually look at
+        # 3. Combines them into one feature vector (256 bins)
         f = np.concatenate([mean_wf, std_wf])
         
         features.append(f)
         
-        # 4. Store the metadata for coloring the plots later
+        # 4. Stores the metadata for coloring the plots later
         metadata.append({
             'xmax': e.xmax,
             'energy': e.energy,

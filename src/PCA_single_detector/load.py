@@ -83,5 +83,4 @@ def load_and_transform(file_path: str) -> list[Event]:
 
 if __name__ == "__main__":
     main()
-    # This is the "Magic Line" that keeps windows from closing
     plt.show(block=True)

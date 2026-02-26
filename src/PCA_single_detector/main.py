@@ -14,9 +14,7 @@ from aggregation import extract_event_features
 from statistics import calculate_separation
 import plotting
 
-def analyze_subset(events, label, args):
-    """Universal analysis for Protons, Irons, or mixed datasets."""
-    
+def analyze_subset(events, label, args):    
     # Identify populations
     protons = [e for e in events if e.particle == config.PROTON_ID]
     irons = [e for e in events if e.particle == config.IRON_ID]
@@ -38,7 +36,6 @@ def analyze_subset(events, label, args):
         plotting.plot_mean_std(p_feat, i_feat, label)
 
     # 3. PCA Calculation
-    # Solve for max of (requested n_pcs) and 12 (required for the 3D grid)
     n_to_solve = min(max(args.n_pcs, 12), len(all_feat))
     pca = PCA(n_components=n_to_solve).fit(all_feat)
     all_trans = pca.transform(all_feat)
