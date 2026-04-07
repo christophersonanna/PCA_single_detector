@@ -1,108 +1,155 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import argparse
-import os
+import argparse, os, datetime
 import numpy as np
-from glob import glob
+import pandas as pd
 from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from scipy.optimize import curve_fit
 
-import config
-from load import load_and_transform
+import config, plotting
+from load import load_and_transform, get_file_list
 from aggregation import extract_event_features
 from statistics import calculate_separation
-import plotting
 
-def analyze_subset(events, label, args):    
-    # Identify populations
-    protons = [e for e in events if e.particle == config.PROTON_ID]
-    irons = [e for e in events if e.particle == config.IRON_ID]
+def extract_batch(file_list, args):
+    all_f, all_m = [], []
+    for f_path in file_list:
+        try:
+            df = load_and_transform(f_path)
+            feats, meta = extract_event_features(df)
+            if feats is not None:
+                all_f.append(feats); all_m.append(meta)
+        except Exception as e: print(f"Error: {e}")
+    return (np.vstack(all_f), all_m) if all_f else (None, None)
+
+def balance_dataset(features, metadata, skip=False):
+    p_idx = np.where([m['particle'] == config.PROTON_ID for m in metadata])[0]
+    i_idx = np.where([m['particle'] == config.IRON_ID for m in metadata])[0]
+    if skip or len(p_idx) == 0 or len(i_idx) == 0: return features, metadata
+    target = min(len(p_idx), len(i_idx))
+    np.random.seed(42); idx = np.concatenate([np.random.choice(p_idx, target, False), np.random.choice(i_idx, target, False)])
+    np.random.shuffle(idx)
+    return features[idx], [metadata[j] for j in idx]
+
+def fit_pulse_decay(waveform):
+    peak_idx = np.argmax(waveform); tail = waveform[peak_idx:]
+    if len(tail) < 10: return 0, tail
+    t = np.arange(len(tail))
+    try:
+        popt, _ = curve_fit(plotting.exponential_model, t, tail, p0=[tail[0], 0.1, 0], maxfev=1500)
+        return abs(popt[1]), tail
+    except: return 0, tail
+
+def analyze_subset(features, metadata, label, out_dir, args):
+    # 1. Map particles to 0 and 1 for correlation math
+    # We use this both for indexing and for the Point-Biserial correlation
+    numeric_labels = np.array([1 if m['particle'] == config.IRON_ID else 0 for m in metadata])
+    p_idx = np.where(numeric_labels == 0)[0]
+    i_idx = np.where(numeric_labels == 1)[0]
     
-    print(f"\n--- Analysis for: {label} ---")
-    print(f"Total Events: {len(events)} ({len(protons)} P, {len(irons)} I)")
+    if (len(p_idx) + len(i_idx)) < 10: 
+        return 0, len(p_idx), len(i_idx), 0, 0, 0, 0
 
-    if len(events) < 2:
-        print("Warning: Skipping - Need at least 2 events for PCA.")
-        return 0
-
-    # 1. Feature & Metadata Extraction
-    all_feat, all_meta = extract_event_features(events)
+    if args.norm: 
+        features = StandardScaler().fit_transform(features)
     
-    # 2. Waveform Plotting (Mean/Std)
-    if args.plot_wave:
-        p_feat, _ = extract_event_features(protons) if protons else (None, None)
-        i_feat, _ = extract_event_features(irons) if irons else (None, None)
-        plotting.plot_mean_std(p_feat, i_feat, label)
+    safe_label = label.replace(" ", "_").replace(".", "p")
+    
+    # 2. Fit PCA using the user-defined n_pcs
+    pca = PCA(n_components=args.n_pcs)#.fit(features)
+    trans = pca.fit_transform(features)
+    recon = pca.inverse_transform(trans)
+    
+    # 3. Physics Analysis (Averages and Decay)
+    p_avg, i_avg = np.mean(recon[p_idx], axis=0), np.mean(recon[i_idx], axis=0)
+    p_lam, p_tail = fit_pulse_decay(p_avg)
+    i_lam, i_tail = fit_pulse_decay(i_avg)
+    
+    # 4. Statistical Metrics
+    sep_val = calculate_separation(trans[p_idx], trans[i_idx])['sep']
+    var_exp = np.sum(pca.explained_variance_ratio_)
 
-    # 3. PCA Calculation
-    n_to_solve = min(max(args.n_pcs, 12), len(all_feat))
-    pca = PCA(n_components=n_to_solve).fit(all_feat)
-    all_trans = pca.transform(all_feat)
-
-    # 4. PC Shape and Scree Plots
-    if args.plot_pcs:
-        plotting.plot_scree(pca)
-        plotting.plot_pca_components(pca, args.n_pcs)
-
-    # 5. 3D Variance Grid
-    if args.plot_3d:
-        p_idx = [i for i, e in enumerate(events) if e.particle == config.PROTON_ID]
-        i_idx = [i for i, e in enumerate(events) if e.particle == config.IRON_ID]
+    # 5. Restored Plotting Suite
+    if args.plot_laplace or args.all: 
+        plotting.plot_decay_fit(p_tail, i_tail, p_lam, i_lam, f"{out_dir}/decay_{safe_label}.png")
         
-        p_trans = all_trans[p_idx] if p_idx else np.empty((0, n_to_solve))
-        i_trans = all_trans[i_idx] if i_idx else np.empty((0, n_to_solve))
-        p_meta = [all_meta[i] for i in p_idx]
-        i_meta = [all_meta[i] for i in i_idx]
+    if args.plot_fft or args.all: 
+        plotting.plot_frequency_analysis(p_avg, i_avg, f"{out_dir}/fft_{safe_label}.png")
         
-        plotting.plot_3d_variance_grid(p_trans, i_trans, p_meta, i_meta, color_attr=args.color_by)
+    if args.plot_wave or args.all: 
+        plotting.plot_mean_std(features[p_idx], features[i_idx], label, f"{out_dir}/wave_{safe_label}.png")
+        
+    if args.plot_3d or args.all:
+        cvs = np.array([m[args.color_by] for m in metadata]) if args.color_by else None
+        # This now calls the 2x2 Grid with 3D projection
+        plotting.plot_3d_variance_grid(trans[p_idx], trans[i_idx], len(p_idx), len(i_idx), 
+                                       f"{out_dir}/3d_{safe_label}.png", cvs, args.color_by)
+    
+    if args.plot_pcs or args.all:
+        plotting.plot_scree(pca, f"{out_dir}/scree_{safe_label}.png")
+        # UPDATED: Passes trans and numeric_labels for the correlation text on the grid
+        plotting.plot_pca_components(pca, trans, numeric_labels, args.n_pcs, f"{out_dir}/comp_{safe_label}.png")
+        
+    if args.plot_recon or args.all:
+        ps, ismp = recon[np.random.choice(p_idx)], recon[np.random.choice(i_idx)]
+        plotting.plot_reconstruction_comparison(p_avg, i_avg, ps, ismp, label, f"{out_dir}/recon_{safe_label}.png")
 
-    # Return separation power if both exist
-    if len(protons) > 1 and len(irons) > 1:
-        return calculate_separation(all_trans[p_idx], all_trans[i_idx])['sep']
-    return 0
+    return sep_val, len(p_idx), len(i_idx), var_exp, 0, p_lam, i_lam
 
 def main():
-    parser = argparse.ArgumentParser(description="TA PCA Analysis Suite")
-    parser.add_argument("-i", "--input", required=True, help="Path to .parquet file or directory")
+    parser = argparse.ArgumentParser(description="TA PCA Analysis")
+    parser.add_argument("-i", "--input", nargs='+')
+    #better file selection (still need to add in)
+    parser.add_argument("-n", type=float, help="Selects every nth file in selected directories")
+    parser.add_argument("--force", action='store_true')
+    #working to add there cuts to code
     parser.add_argument("-R", "--radius", type=float, help="Radius cut (km)")
     parser.add_argument("-E", "--energy", type=float, help="Energy cut (log10 eV)")
     parser.add_argument("-X", "--xmax", type=float, help="Xmax cut (g/cm^2)")
-    
-    # Plotting Controls
-    parser.add_argument("--plot-pcs", action="store_true")
-    parser.add_argument("--n-pcs", type=int, default=6)
-    parser.add_argument("--plot-wave", action="store_true")
-    parser.add_argument("--plot-3d", action="store_true")
-    parser.add_argument("--color-by", type=str, default="xmax", 
-                        choices=["xmax", "energy", "particle", "radius"])
+    parser.add_argument("--is_good,",type=float, help="Good Detector cut (1=not part of cluster, 2=part of space cluster, 3=passed rought time pattern recon, 4=part of event, 5=saturated counter")
+    #
+    parser.add_argument("--cache")
+    parser.add_argument("--all", action="store_true")
+    parser.add_argument("--norm", action="store_true")
+    parser.add_argument("--no-balance", action="store_true")
     parser.add_argument("--sweep", action="store_true")
-    
+    parser.add_argument("--plot-3d", action="store_true")
+    parser.add_argument("--plot-pcs", action="store_true")
+    parser.add_argument("--plot-wave", action="store_true")
+    parser.add_argument("--plot-recon", action="store_true")
+    parser.add_argument("--plot-fft", action="store_true")
+    parser.add_argument("--plot-laplace", action="store_true")
+    parser.add_argument("--plot-fidelity", action="store_true")
+    parser.add_argument("--n-pcs", type=int, default=12)
+    parser.add_argument("--sweep-var", choices=['radius', 'energy', 'theta'], default='radius')
+    parser.add_argument("--color-by", type=str)
     args = parser.parse_args()
 
-    # File Discovery
-    if os.path.isdir(args.input):
-        file_list = sorted(glob(os.path.join(args.input, "*.parquet")))
-        print(f"Directory detected. Found {len(file_list)} Parquet files.")
+    out_dir = f"results_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}"; os.makedirs(out_dir, exist_ok=True)
+    if args.cache and os.path.exists(args.cache):
+        data = np.load(args.cache, allow_pickle=True); f, m = data['features'], data['metadata'].tolist()
     else:
-        file_list = [args.input]
+        f, m = extract_batch(get_file_list(args.input), args)
+        if args.cache and f is not None: np.savez_compressed(args.cache, features=f, metadata=m)
 
-    if not file_list:
-        print("Error: No parquet files found.")
-        return
-
+    if f is None: return
+    f, m = balance_dataset(f, m, skip=args.no_balance)
+    log_data = []
+    
+    ''' 
     # Aggregate Events
     all_events = []
-    for f in file_list:
+    for d in data:
         try:
-            loaded = load_and_transform(f)
+            loaded = load_and_transform(d)
             all_events.extend(loaded)
         except Exception as e:
-            print(f"Failed to load {f}: {e}")
+            print(f"Failed to load {d}: {e}")
+   
+    print(f"Total Combined Events: {len(all_events)}")   
     
-    print(f"Total Combined Events: {len(all_events)}")
     
-    # Apply Cuts
+    #Apply Cuts
     events = all_events
     if args.energy:
         events = [e for e in events if abs(e.energy - args.energy) < config.ENERGY_WINDOW]
@@ -110,24 +157,23 @@ def main():
     if args.xmax:
         events = [e for e in events if abs(e.xmax - args.xmax) < 50.0]
         print(f"Xmax cut applied: {args.xmax}")
-
-    # Run Analysis
-    if args.sweep:
-        sweep_data = []
-        for r in [2.0, 4.0, 6.0, 8.0, 10.0, 12.0]:
-            r_evs = [e for e in events if abs(np.mean([h.radius for h in e.hits]) - r) < config.RADIUS_WINDOW]
-            if len(r_evs) > 2:
-                sep = analyze_subset(r_evs, f"Radius {r}km", args)
-                sweep_data.append({'r': r, 's': sep})
-        if sweep_data:
-            plotting.plot_radius_sweep(sweep_data)
+        '''
+    #Run analysis
+    if args.sweep or args.all:
+        mapping = {'radius': (config.RADIUS_BINS, config.RADIUS_WINDOW, 'radius'),
+                   'energy': (config.ENERGY_BINS, config.ENERGY_WINDOW, 'energy'),
+                   'theta':  (config.THETA_BINS, config.THETA_WINDOW, 'theta')}
+        bins, win, key = mapping[args.sweep_var]
+        for b in bins:
+            idx = [i for i, x in enumerate(m) if abs(x[key] - b) < win]
+            sep, pn, inc, var, fld, pl, il = analyze_subset(f[idx], [m[j] for j in idx], f"{key}_{b}", out_dir, args)
+            log_data.append({'bin': b, 'sep': sep, 'p_count': pn, 'i_count': inc, 'variance': var, 'p_lam': pl, 'i_lam': il})
+        
+        plotting.plot_sweep_summary(log_data, args.sweep_var, out_dir)
+        if args.plot_fidelity or args.all: plotting.plot_fidelity_metrics(log_data, args.sweep_var, f"{out_dir}/fidelity.png")
     else:
-        if args.radius:
-            events = [e for e in events if abs(np.mean([h.radius for h in e.hits]) - args.radius) < config.RADIUS_WINDOW]
-            label = f"Radius {args.radius}km"
-        else:
-            label = "Full Combined Dataset"
-        analyze_subset(events, label, args)
+        analyze_subset(f, m, "FullSet", out_dir, args)
 
-if __name__ == "__main__":
-    main()
+    pd.DataFrame(log_data).to_csv(f"{out_dir}/log.csv", index=False)
+
+if __name__ == "__main__": main()

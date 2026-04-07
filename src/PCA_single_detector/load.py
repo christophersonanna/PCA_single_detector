@@ -81,6 +81,29 @@ def load_and_transform(file_path: str) -> list[Event]:
     print(f"Successfully Loaded {len(events_list)} events.")
     return events_list
 
+import os
+from glob import glob
+
+def get_file_list(input_paths, n_step=1):
+    """
+    Gathers all .parquet files from a list of files or directories.
+    n_step allows for skipping files to speed up testing.
+    """
+    all_files = []
+    for path in input_paths:
+        if os.path.isdir(path):
+            all_files.extend(glob(os.path.join(path, "*.parquet")))
+        elif os.path.isfile(path):
+            all_files.append(path)
+            
+    # Sort for consistency and apply n_step skip
+    all_files = sorted(all_files)[::n_step]
+    
+    if not all_files:
+        print(f"Warning: No files found in paths: {input_paths}")
+        
+    return all_files
+
 if __name__ == "__main__":
     main()
     plt.show(block=True)
